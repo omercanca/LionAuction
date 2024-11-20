@@ -1,4 +1,4 @@
-# 🦁 PSU Auction Hub
+# 🦁 LionAuction
 
 An exclusive auction platform for Penn State students to buy and sell items! Built using Flask, SQLite, JavaScript, HTML, and CSS for seamless functionality and an intuitive user experience.
 
