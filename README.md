@@ -19,7 +19,7 @@ LionAuction is a platform tailored for Penn State students, enabling a safe and 
 Whether you're decluttering your dorm or looking for affordable student deals, PSU Auction Hub has you covered.
 
 
-# ✨ Features
+## ✨ Features
 
 - User Authentication & Roles: Supports multiple user types (Buyer, Seller, Helpdesk) with customized login flows and session management using cookies.
 - Auction Listings Management: Sellers can create, edit, and delete auction listings with detailed information (category, title, description, reserve price, etc.).
