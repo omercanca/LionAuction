@@ -1,0 +1,664 @@
+<html>
+<head>
+<title>app.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6a8759;}
+.s3 { color: #6897bb;}
+.s4 { color: #808080;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+app.py</font>
+</center></td></tr></table>
+<pre><span class="s0">from </span><span class="s1">flask </span><span class="s0">import </span><span class="s1">Flask</span><span class="s0">, </span><span class="s1">flash</span><span class="s0">, </span><span class="s1">redirect</span><span class="s0">, </span><span class="s1">url_for</span><span class="s0">, </span><span class="s1">render_template</span><span class="s0">, </span><span class="s1">g</span>
+<span class="s0">import </span><span class="s1">sqlite3</span>
+<span class="s0">from </span><span class="s1">flask_login </span><span class="s0">import </span><span class="s1">current_user</span>
+<span class="s0">from </span><span class="s1">flask </span><span class="s0">import </span><span class="s1">make_response</span>
+
+<span class="s1">app = Flask(__name__)</span>
+<span class="s0">if </span><span class="s1">__name__ == </span><span class="s2">&quot;__main__&quot;</span><span class="s1">:</span>
+    <span class="s1">app.run(host=</span><span class="s2">'127.0.0.0'</span><span class="s0">, </span><span class="s1">port=</span><span class="s3">5001</span><span class="s0">, </span><span class="s1">debug=</span><span class="s0">True</span><span class="s1">)</span>
+
+
+<span class="s1">@app.route(</span><span class="s2">'/'</span><span class="s1">)  </span><span class="s4"># route for index page</span>
+<span class="s0">def </span><span class="s1">index():</span>
+    <span class="s0">return </span><span class="s1">render_template(</span><span class="s2">'index.html'</span><span class="s1">)</span>
+
+
+<span class="s1">@app.route(</span><span class="s2">'/status0'</span><span class="s1">)  </span><span class="s4"># route for status0 page. What happens when we edit already finished lsting</span>
+<span class="s0">def </span><span class="s1">status0():</span>
+    <span class="s0">return </span><span class="s1">render_template(</span><span class="s2">'status0.html'</span><span class="s1">)</span>
+
+
+<span class="s1">@app.route(</span><span class="s2">'/requests'</span><span class="s1">)  </span><span class="s4"># app route for helpdeks requests</span>
+<span class="s0">def </span><span class="s1">requests():</span>
+    <span class="s4"># Retrieve the email of the currently logged in user from the cookie</span>
+    <span class="s1">email = request.cookies.get(</span><span class="s2">'email'</span><span class="s1">)</span>
+    <span class="s1">conn = sqlite3.connect(</span><span class="s2">'database.db'</span><span class="s1">)</span>
+    <span class="s1">c = conn.cursor()</span>
+
+    <span class="s4"># retrive data from requests table where helpdesk_staff_email matches the logged in user's email</span>
+    <span class="s1">c.execute(</span><span class="s2">&quot;SELECT * FROM requests WHERE helpdesk_staff_email=?&quot;</span><span class="s0">, </span><span class="s1">(email</span><span class="s0">,</span><span class="s1">))</span>
+    <span class="s1">data = c.fetchall()</span>
+    <span class="s1">print(</span><span class="s2">&quot;data:&quot;</span><span class="s0">, </span><span class="s1">data)</span>
+    <span class="s1">conn.close()</span>
+
+    <span class="s4"># make the requests.html template with the data</span>
+    <span class="s0">return </span><span class="s1">render_template(</span><span class="s2">'requests.html'</span><span class="s0">, </span><span class="s1">requests=data</span><span class="s0">, </span><span class="s1">current_user=current_user)</span>
+
+
+<span class="s4"># app route for seller page</span>
+<span class="s1">@app.route(</span><span class="s2">'/seller'</span><span class="s1">)</span>
+<span class="s0">def </span><span class="s1">seller():</span>
+    <span class="s0">return </span><span class="s1">render_template(</span><span class="s2">'seller.html'</span><span class="s1">)</span>
+
+
+<span class="s4"># app route for completed transactions</span>
+<span class="s1">@app.route(</span><span class="s2">'/completed_transactions'</span><span class="s1">)</span>
+<span class="s0">def </span><span class="s1">completed_transactions():</span>
+    <span class="s1">email = request.cookies.get(</span><span class="s2">'email'</span><span class="s1">)  </span><span class="s4"># get email with cookie</span>
+    <span class="s0">if not </span><span class="s1">email:  </span><span class="s4"># if no email return to login</span>
+        <span class="s0">return </span><span class="s1">redirect(url_for(</span><span class="s2">'login'</span><span class="s1">))</span>
+
+    <span class="s1">conn = sqlite3.connect(</span><span class="s2">'database.db'</span><span class="s1">)</span>
+    <span class="s1">c = conn.cursor()</span>
+
+    <span class="s4"># get completed transactions for seller from trans table</span>
+    <span class="s1">c.execute(</span><span class="s2">&quot;&quot;&quot; 
+        SELECT * 
+        FROM transactions 
+        WHERE seller_email = ? AND Payment IS NOT NULL 
+    &quot;&quot;&quot;</span><span class="s0">, </span><span class="s1">(email</span><span class="s0">,</span><span class="s1">))</span>
+    <span class="s1">rows = c.fetchall()</span>
+
+    <span class="s1">completed_transactions = []  </span><span class="s4"># pute completed transaction in dic</span>
+    <span class="s0">for </span><span class="s1">row </span><span class="s0">in </span><span class="s1">rows:</span>
+        <span class="s1">transaction = {</span>
+            <span class="s2">'transaction_id'</span><span class="s1">: row[</span><span class="s3">0</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'seller_email'</span><span class="s1">: row[</span><span class="s3">1</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'listing_id'</span><span class="s1">: row[</span><span class="s3">2</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'bidder_email'</span><span class="s1">: row[</span><span class="s3">3</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'date'</span><span class="s1">: row[</span><span class="s3">4</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'payment'</span><span class="s1">: row[</span><span class="s3">5</span><span class="s1">]</span>
+        <span class="s1">}</span>
+        <span class="s1">completed_transactions.append(transaction)</span>
+
+    <span class="s1">conn.close()</span>
+
+    <span class="s0">return </span><span class="s1">render_template(</span><span class="s2">'completed_transactions.html'</span><span class="s0">, </span><span class="s1">completed_transactions=completed_transactions)</span>
+
+
+<span class="s4"># app route for listings</span>
+<span class="s1">@app.route(</span><span class="s2">'/listings'</span><span class="s1">)</span>
+<span class="s0">def </span><span class="s1">listings():</span>
+    <span class="s1">email = request.cookies.get(</span><span class="s2">'email'</span><span class="s1">) </span><span class="s4"># get email</span>
+    <span class="s0">if not </span><span class="s1">email:</span>
+        <span class="s0">return </span><span class="s1">redirect(url_for(</span><span class="s2">'login'</span><span class="s1">))</span>
+
+    <span class="s1">conn = sqlite3.connect(</span><span class="s2">'database.db'</span><span class="s1">)</span>
+    <span class="s1">c = conn.cursor()</span>
+
+    <span class="s4"># get listings from auction_listings</span>
+    <span class="s1">c.execute(</span><span class="s2">&quot;SELECT * FROM auction_listings WHERE seller_email = ?&quot;</span><span class="s0">, </span><span class="s1">(email</span><span class="s0">,</span><span class="s1">)) </span><span class="s4"># get email where seller email is same as logged in</span>
+    <span class="s1">rows = c.fetchall()</span>
+
+    <span class="s1">listings = [] </span><span class="s4"># put listings in dic</span>
+    <span class="s0">for </span><span class="s1">row </span><span class="s0">in </span><span class="s1">rows:</span>
+        <span class="s1">listing = {</span>
+            <span class="s2">'seller_email'</span><span class="s1">: row[</span><span class="s3">0</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'listing_id'</span><span class="s1">: row[</span><span class="s3">1</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'category'</span><span class="s1">: row[</span><span class="s3">2</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'auction_title'</span><span class="s1">: row[</span><span class="s3">3</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'product_name'</span><span class="s1">: row[</span><span class="s3">4</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'product_description'</span><span class="s1">: row[</span><span class="s3">5</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'quantity'</span><span class="s1">: row[</span><span class="s3">6</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'reserve_price'</span><span class="s1">: row[</span><span class="s3">7</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'max_bids'</span><span class="s1">: row[</span><span class="s3">8</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'status'</span><span class="s1">: row[</span><span class="s3">9</span><span class="s1">]</span><span class="s0">,</span>
+        <span class="s1">}</span>
+
+        <span class="s1">listings.append(listing)</span>
+
+    <span class="s4">#get transactions for seller from tran table</span>
+    <span class="s1">c.execute(</span><span class="s2">&quot;&quot;&quot; 
+        SELECT * 
+        FROM transactions 
+        WHERE seller_email = ? AND Payment IS NOT NULL AND seller_email IS NOT NULL 
+    &quot;&quot;&quot;</span><span class="s0">, </span><span class="s1">(email</span><span class="s0">,</span><span class="s1">))</span>
+    <span class="s1">rows = c.fetchall()</span>
+
+    <span class="s1">completed_transactions = []</span>
+    <span class="s0">for </span><span class="s1">row </span><span class="s0">in </span><span class="s1">rows:</span>
+        <span class="s1">transaction = {</span>
+            <span class="s2">'transaction_id'</span><span class="s1">: row[</span><span class="s3">0</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'seller_email'</span><span class="s1">: row[</span><span class="s3">1</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'listing_id'</span><span class="s1">: row[</span><span class="s3">2</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'bidder_email'</span><span class="s1">: row[</span><span class="s3">3</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'date'</span><span class="s1">: row[</span><span class="s3">4</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'payment'</span><span class="s1">: row[</span><span class="s3">5</span><span class="s1">]</span>
+        <span class="s1">}</span>
+        <span class="s1">completed_transactions.append(transaction)</span>
+
+    <span class="s1">conn.close()</span>
+
+    <span class="s0">return </span><span class="s1">render_template(</span><span class="s2">'listings.html'</span><span class="s0">, </span><span class="s1">listings=listings</span><span class="s0">, </span><span class="s1">completed_transactions=completed_transactions)</span>
+
+<span class="s4">#route for editing listings</span>
+<span class="s1">@app.route(</span><span class="s2">'/edit_listing/&lt;int:listing_id&gt;'</span><span class="s1">)</span>
+<span class="s0">def </span><span class="s1">edit_listing(listing_id):</span>
+    <span class="s1">conn = sqlite3.connect(</span><span class="s2">'database.db'</span><span class="s1">)</span>
+    <span class="s1">c = conn.cursor()</span>
+
+    <span class="s1">c.execute(</span><span class="s2">&quot;SELECT * FROM auction_listings WHERE listing_id = ?&quot;</span><span class="s0">, </span><span class="s1">(listing_id</span><span class="s0">,</span><span class="s1">))</span>
+    <span class="s1">row = c.fetchone()</span>
+<span class="s4"># if its not there, say the listing isnt found</span>
+    <span class="s0">if not </span><span class="s1">row:</span>
+        <span class="s1">conn.close()</span>
+        <span class="s0">return </span><span class="s2">&quot;Listing not found&quot;</span><span class="s0">, </span><span class="s3">404</span>
+
+    <span class="s0">if </span><span class="s1">row[</span><span class="s3">9</span><span class="s1">] != </span><span class="s3">1</span><span class="s1">:  </span><span class="s4"># see if status is 1. if it is, show the erroor page</span>
+        <span class="s1">conn.close()</span>
+        <span class="s0">return </span><span class="s1">render_template(</span><span class="s2">&quot;status0.html&quot;</span><span class="s1">)</span>
+
+    <span class="s1">listing = {</span>
+        <span class="s2">'listing_id'</span><span class="s1">: row[</span><span class="s3">1</span><span class="s1">]</span><span class="s0">,</span>
+        <span class="s2">'category'</span><span class="s1">: row[</span><span class="s3">2</span><span class="s1">]</span><span class="s0">,</span>
+        <span class="s2">'auction_title'</span><span class="s1">: row[</span><span class="s3">3</span><span class="s1">]</span><span class="s0">,</span>
+        <span class="s2">'product_name'</span><span class="s1">: row[</span><span class="s3">4</span><span class="s1">]</span><span class="s0">,</span>
+        <span class="s2">'product_description'</span><span class="s1">: row[</span><span class="s3">5</span><span class="s1">]</span><span class="s0">,</span>
+        <span class="s2">'quantity'</span><span class="s1">: row[</span><span class="s3">6</span><span class="s1">]</span><span class="s0">,</span>
+        <span class="s2">'reserve_price'</span><span class="s1">: row[</span><span class="s3">7</span><span class="s1">]</span><span class="s0">,</span>
+        <span class="s2">'max_bids'</span><span class="s1">: row[</span><span class="s3">8</span><span class="s1">]</span><span class="s0">,</span>
+        <span class="s2">'status'</span><span class="s1">: row[</span><span class="s3">9</span><span class="s1">]</span><span class="s0">,</span>
+    <span class="s1">}</span>
+
+    <span class="s1">c.execute(</span><span class="s2">&quot;SELECT DISTINCT parent_category FROM categories&quot;</span><span class="s1">)</span>
+    <span class="s1">categories = [{</span><span class="s2">'parent_category'</span><span class="s1">: row[</span><span class="s3">0</span><span class="s1">]} </span><span class="s0">for </span><span class="s1">row </span><span class="s0">in </span><span class="s1">c.fetchall()]</span>
+
+    <span class="s1">conn.close()</span>
+
+    <span class="s0">return </span><span class="s1">render_template(</span><span class="s2">'edit_listing.html'</span><span class="s0">, </span><span class="s1">listing=listing</span><span class="s0">, </span><span class="s1">categories=categories)</span>
+
+
+<span class="s1">@app.route(</span><span class="s2">'/update_listing/&lt;int:listing_id&gt;'</span><span class="s0">, </span><span class="s1">methods=[</span><span class="s2">'POST'</span><span class="s1">]) </span><span class="s4">#route for updating listing</span>
+<span class="s0">def </span><span class="s1">update_listing(listing_id):</span>
+    <span class="s1">category = request.form[</span><span class="s2">'category'</span><span class="s1">] </span><span class="s4">#form request for updates</span>
+    <span class="s1">auction_title = request.form[</span><span class="s2">'auction_title'</span><span class="s1">]</span>
+    <span class="s1">product_name = request.form[</span><span class="s2">'product_name'</span><span class="s1">]</span>
+    <span class="s1">product_description = request.form[</span><span class="s2">'product_description'</span><span class="s1">]</span>
+    <span class="s1">quantity = int(request.form[</span><span class="s2">'quantity'</span><span class="s1">])</span>
+    <span class="s1">reserve_price = float(request.form[</span><span class="s2">'reserve_price'</span><span class="s1">])</span>
+    <span class="s1">max_bids = int(request.form[</span><span class="s2">'max_bids'</span><span class="s1">])</span>
+
+    <span class="s1">conn = sqlite3.connect(</span><span class="s2">'database.db'</span><span class="s1">)</span>
+    <span class="s1">c = conn.cursor()</span>
+
+<span class="s4">#updating table with form</span>
+    <span class="s1">c.execute(</span><span class="s2">'''UPDATE auction_listings 
+                 SET category = ?, auction_title = ?, product_name = ?, product_description = ?, quantity = ?, reserve_price = ?, max_bids = ? 
+                 WHERE listing_id = ?'''</span><span class="s0">, </span><span class="s1">(</span>
+    <span class="s1">category</span><span class="s0">, </span><span class="s1">auction_title</span><span class="s0">, </span><span class="s1">product_name</span><span class="s0">, </span><span class="s1">product_description</span><span class="s0">, </span><span class="s1">quantity</span><span class="s0">, </span><span class="s1">reserve_price</span><span class="s0">, </span><span class="s1">max_bids</span><span class="s0">, </span><span class="s1">listing_id))</span>
+
+    <span class="s1">conn.commit()</span>
+    <span class="s1">conn.close()</span>
+
+    <span class="s0">return </span><span class="s1">redirect(url_for(</span><span class="s2">'listings'</span><span class="s1">))</span>
+
+<span class="s4">#deleting listings route</span>
+<span class="s1">@app.route(</span><span class="s2">'/delete_listing/&lt;int:listing_id&gt;'</span><span class="s0">, </span><span class="s1">methods=[</span><span class="s2">'POST'</span><span class="s1">])</span>
+<span class="s0">def </span><span class="s1">delete_listing(listing_id):</span>
+    <span class="s1">conn = sqlite3.connect(</span><span class="s2">'database.db'</span><span class="s1">)</span>
+    <span class="s1">c = conn.cursor()</span>
+
+    <span class="s4">#get listing where id is same as id</span>
+    <span class="s1">c.execute(</span><span class="s2">&quot;SELECT * FROM auction_listings WHERE listing_id = ?&quot;</span><span class="s0">, </span><span class="s1">(listing_id</span><span class="s0">,</span><span class="s1">))</span>
+    <span class="s1">row = c.fetchone()</span>
+
+    <span class="s0">if not </span><span class="s1">row: </span><span class="s4">#fail if not a row</span>
+        <span class="s1">conn.close()</span>
+        <span class="s0">return </span><span class="s2">&quot;Listing not found&quot;</span><span class="s0">, </span><span class="s3">404</span>
+
+    <span class="s1">seller_email = row[</span><span class="s3">0</span><span class="s1">]</span>
+    <span class="s1">category = row[</span><span class="s3">2</span><span class="s1">]</span>
+    <span class="s1">auction_title = row[</span><span class="s3">3</span><span class="s1">]</span>
+    <span class="s1">product_name = row[</span><span class="s3">4</span><span class="s1">]</span>
+    <span class="s1">product_description = row[</span><span class="s3">5</span><span class="s1">]</span>
+    <span class="s1">quantity = row[</span><span class="s3">6</span><span class="s1">]</span>
+    <span class="s1">reserve_price = row[</span><span class="s3">7</span><span class="s1">]</span>
+    <span class="s1">max_bids = row[</span><span class="s3">8</span><span class="s1">]</span>
+    <span class="s1">status = row[</span><span class="s3">9</span><span class="s1">]</span>
+
+    <span class="s4"># remove the listing from the table</span>
+    <span class="s1">c.execute(</span><span class="s2">&quot;DELETE FROM auction_listings WHERE listing_id = ?&quot;</span><span class="s0">, </span><span class="s1">(listing_id</span><span class="s0">,</span><span class="s1">))</span>
+
+    <span class="s4"># insert the listing into deleted listings table</span>
+    <span class="s1">c.execute(</span><span class="s2">&quot;&quot;&quot; 
+        INSERT INTO deleted_listings (seller_email, listing_id, category, auction_title, product_name, product_description, quantity, reserve_price, max_bids, status) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) 
+    &quot;&quot;&quot;</span><span class="s0">, </span><span class="s1">(seller_email</span><span class="s0">, </span><span class="s1">listing_id</span><span class="s0">, </span><span class="s1">category</span><span class="s0">, </span><span class="s1">auction_title</span><span class="s0">, </span><span class="s1">product_name</span><span class="s0">, </span><span class="s1">product_description</span><span class="s0">, </span><span class="s1">quantity</span><span class="s0">, </span><span class="s1">reserve_price</span><span class="s0">,</span>
+          <span class="s1">max_bids</span><span class="s0">, </span><span class="s1">status))</span>
+
+    <span class="s1">conn.commit()</span>
+    <span class="s1">conn.close()</span>
+
+    <span class="s0">return </span><span class="s1">redirect(url_for(</span><span class="s2">'listings'</span><span class="s1">))</span>
+
+<span class="s4">#helpdesk route</span>
+<span class="s1">@app.route(</span><span class="s2">'/helpdesk'</span><span class="s1">)</span>
+<span class="s0">def </span><span class="s1">helpdesk():</span>
+    <span class="s0">return </span><span class="s1">render_template(</span><span class="s2">'helpdesk.html'</span><span class="s1">)</span>
+
+
+<span class="s1">DATABASE = </span><span class="s2">'database.db'</span>
+
+<span class="s1">app.secret_key = </span><span class="s2">&quot;omer&quot;</span>
+
+<span class="s4"># logout route</span>
+<span class="s1">@app.route(</span><span class="s2">'/logout'</span><span class="s1">)</span>
+<span class="s0">def </span><span class="s1">logout():</span>
+    <span class="s1">session.pop(</span><span class="s2">'email'</span><span class="s0">, None</span><span class="s1">) </span><span class="s4">#kill session for this email</span>
+    <span class="s1">session.pop(</span><span class="s2">'login_type'</span><span class="s0">, None</span><span class="s1">)</span>
+    <span class="s0">return </span><span class="s1">redirect(url_for(</span><span class="s2">'login'</span><span class="s1">))</span>
+
+<span class="s4">#login function</span>
+<span class="s1">@app.route(</span><span class="s2">'/'</span><span class="s0">, </span><span class="s1">methods=[</span><span class="s2">'GET'</span><span class="s0">, </span><span class="s2">'POST'</span><span class="s1">])</span>
+<span class="s0">def </span><span class="s1">login():</span>
+    <span class="s0">if </span><span class="s1">request.method == </span><span class="s2">'POST'</span><span class="s1">:</span>
+        <span class="s1">email = request.form[</span><span class="s2">'email'</span><span class="s1">] </span><span class="s4"># get email and password from user</span>
+        <span class="s1">password = request.form[</span><span class="s2">'password'</span><span class="s1">]</span>
+        <span class="s1">login_type = request.form[</span><span class="s2">'login_type'</span><span class="s1">] </span><span class="s4"># login type from user</span>
+
+        <span class="s1">conn = sqlite3.connect(</span><span class="s2">'database.db'</span><span class="s1">)</span>
+        <span class="s1">c = conn.cursor()</span>
+
+        <span class="s0">if </span><span class="s1">login_type == </span><span class="s2">'buyer'</span><span class="s1">: </span><span class="s4"># if they are a buyer, search in the users and make sure its there</span>
+            <span class="s1">c.execute(</span><span class="s2">&quot;SELECT * FROM Users WHERE email=? AND password=?&quot;</span><span class="s0">, </span><span class="s1">(email</span><span class="s0">, </span><span class="s1">password))</span>
+            <span class="s0">if </span><span class="s1">c.fetchone() </span><span class="s0">is None</span><span class="s1">:</span>
+                <span class="s0">return </span><span class="s2">'Invalid email or password.'</span>
+            <span class="s0">else</span><span class="s1">: </span><span class="s4">#check bidders and make sure its there</span>
+                <span class="s1">c.execute(</span><span class="s2">&quot;SELECT * FROM Bidders WHERE email=?&quot;</span><span class="s0">, </span><span class="s1">(email</span><span class="s0">,</span><span class="s1">))</span>
+                <span class="s0">if </span><span class="s1">c.fetchone() </span><span class="s0">is not None</span><span class="s1">:</span>
+                    <span class="s1">response = make_response(redirect(</span><span class="s2">'/buyer'</span><span class="s1">)) </span><span class="s4"># go to buyer.html</span>
+                    <span class="s1">response.set_cookie(</span><span class="s2">'email'</span><span class="s0">, </span><span class="s1">email) </span><span class="s4">#remember email</span>
+                    <span class="s1">response.set_cookie(</span><span class="s2">'login_type'</span><span class="s0">, </span><span class="s1">login_type) </span><span class="s4">#remember login type</span>
+                    <span class="s0">return </span><span class="s1">response</span>
+                <span class="s0">else</span><span class="s1">: </span><span class="s4">#else return its not a buyer</span>
+                    <span class="s0">return </span><span class="s2">'User is not a buyer.'</span>
+        <span class="s4">#same process is repeated or seller and helpdesk</span>
+        <span class="s0">elif </span><span class="s1">login_type == </span><span class="s2">'seller'</span><span class="s1">:</span>
+            <span class="s1">c.execute(</span><span class="s2">&quot;SELECT * FROM Users WHERE email=? AND password=?&quot;</span><span class="s0">, </span><span class="s1">(email</span><span class="s0">, </span><span class="s1">password))</span>
+            <span class="s1">user = c.fetchone()</span>
+            <span class="s0">if </span><span class="s1">user </span><span class="s0">is None</span><span class="s1">:</span>
+                <span class="s0">return </span><span class="s2">'Invalid email or password.'</span>
+            <span class="s0">else</span><span class="s1">:</span>
+                <span class="s1">c.execute(</span><span class="s2">&quot;SELECT * FROM Sellers WHERE email=?&quot;</span><span class="s0">, </span><span class="s1">(email</span><span class="s0">,</span><span class="s1">))</span>
+                <span class="s0">if </span><span class="s1">c.fetchone() </span><span class="s0">is not None</span><span class="s1">:</span>
+                    <span class="s1">response = make_response(redirect(</span><span class="s2">'/seller'</span><span class="s1">))</span>
+                    <span class="s1">response.set_cookie(</span><span class="s2">'email'</span><span class="s0">, </span><span class="s1">email)</span>
+                    <span class="s1">response.set_cookie(</span><span class="s2">'login_type'</span><span class="s0">, </span><span class="s1">login_type)</span>
+                    <span class="s0">return </span><span class="s1">response</span>
+                <span class="s0">else</span><span class="s1">:</span>
+                    <span class="s0">return </span><span class="s2">'User is not a seller.'</span>
+
+        <span class="s0">elif </span><span class="s1">login_type == </span><span class="s2">'helpdesk'</span><span class="s1">:</span>
+            <span class="s1">c.execute(</span><span class="s2">&quot;SELECT * FROM Users WHERE email=? AND password=?&quot;</span><span class="s0">, </span><span class="s1">(email</span><span class="s0">, </span><span class="s1">password))</span>
+            <span class="s1">user = c.fetchone()</span>
+            <span class="s0">if </span><span class="s1">user </span><span class="s0">is None</span><span class="s1">:</span>
+                <span class="s0">return </span><span class="s2">'Invalid email or password.'</span>
+            <span class="s0">else</span><span class="s1">:</span>
+                <span class="s1">c.execute(</span><span class="s2">&quot;SELECT * FROM Helpdesk WHERE email=?&quot;</span><span class="s0">, </span><span class="s1">(email</span><span class="s0">,</span><span class="s1">))</span>
+                <span class="s0">if </span><span class="s1">c.fetchone() </span><span class="s0">is not None</span><span class="s1">:</span>
+                    <span class="s1">response = make_response(redirect(</span><span class="s2">'/helpdesk'</span><span class="s1">))</span>
+                    <span class="s1">response.set_cookie(</span><span class="s2">'email'</span><span class="s0">, </span><span class="s1">email)</span>
+                    <span class="s1">response.set_cookie(</span><span class="s2">'login_type'</span><span class="s0">, </span><span class="s1">login_type)</span>
+                    <span class="s0">return </span><span class="s1">response</span>
+                <span class="s0">else</span><span class="s1">:</span>
+                    <span class="s0">return </span><span class="s2">'User is not part of the helpdesk.'</span>
+
+        <span class="s1">conn.close()</span>
+
+    <span class="s0">return </span><span class="s1">render_template(</span><span class="s2">'login.html'</span><span class="s1">)</span>
+
+<span class="s4">#profile route</span>
+<span class="s1">@app.route(</span><span class="s2">'/profile'</span><span class="s1">)</span>
+<span class="s0">def </span><span class="s1">profile():</span>
+    <span class="s1">email = request.cookies.get(</span><span class="s2">'email'</span><span class="s1">) </span><span class="s4"># get email</span>
+    <span class="s1">login_type = request.cookies.get(</span><span class="s2">'login_type'</span><span class="s1">) </span><span class="s4">#get login type</span>
+    <span class="s0">if not </span><span class="s1">email: </span><span class="s4">#if none go login again</span>
+        <span class="s0">return </span><span class="s1">redirect(url_for(</span><span class="s2">'login'</span><span class="s1">))</span>
+    <span class="s1">conn = sqlite3.connect(</span><span class="s2">'database.db'</span><span class="s1">)</span>
+    <span class="s1">c = conn.cursor()</span>
+
+    <span class="s0">if </span><span class="s1">login_type == </span><span class="s2">'buyer'</span><span class="s1">: </span><span class="s4"># if theyre a buyer, get buyer info</span>
+        <span class="s1">c.execute(</span>
+            <span class="s2">&quot;SELECT email, first_name, last_name, gender, age, major, home_address_id FROM Bidders WHERE email=?&quot;</span><span class="s0">,</span>
+            <span class="s1">(email</span><span class="s0">,</span><span class="s1">))</span>
+        <span class="s1">user_data = c.fetchone()</span>
+        <span class="s1">address_id = user_data[</span><span class="s3">6</span><span class="s1">]</span>
+        <span class="s1">c.execute(</span><span class="s2">&quot;SELECT address_id, street_num, street_name, zipcode FROM Address WHERE address_id=?&quot;</span><span class="s0">,</span>
+                  <span class="s1">(address_id</span><span class="s0">,</span><span class="s1">))</span>
+        <span class="s1">address_data = c.fetchone()</span>
+        <span class="s1">zipcode = address_data[</span><span class="s3">3</span><span class="s1">]</span>
+        <span class="s1">c.execute(</span><span class="s2">&quot;SELECT city, state FROM Zipcode_Info WHERE zipcode=?&quot;</span><span class="s0">, </span><span class="s1">(zipcode</span><span class="s0">,</span><span class="s1">))</span>
+        <span class="s1">city_state_data = c.fetchone()</span>
+        <span class="s1">c.execute(</span><span class="s2">&quot;SELECT credit_card_num FROM Credit_Cards WHERE owner_email=?&quot;</span><span class="s0">, </span><span class="s1">(email</span><span class="s0">,</span><span class="s1">))</span>
+        <span class="s1">credit_card_data = c.fetchone()</span>
+        <span class="s1">c.execute(</span><span class="s2">&quot;SELECT rating, rating_desc FROM Rating WHERE bidder_email=?&quot;</span><span class="s0">, </span><span class="s1">(email</span><span class="s0">,</span><span class="s1">))</span>
+        <span class="s1">rating_data = c.fetchone()</span>
+
+        <span class="s4"># if any of the data is none just maek an empty tuple so it doesnt crash</span>
+        <span class="s1">user_data = user_data </span><span class="s0">if </span><span class="s1">user_data </span><span class="s0">else </span><span class="s1">()</span>
+        <span class="s1">address_data = address_data </span><span class="s0">if </span><span class="s1">address_data </span><span class="s0">else </span><span class="s1">()</span>
+        <span class="s1">city_state_data = city_state_data </span><span class="s0">if </span><span class="s1">city_state_data </span><span class="s0">else </span><span class="s1">()</span>
+        <span class="s1">credit_card_data = credit_card_data </span><span class="s0">if </span><span class="s1">credit_card_data </span><span class="s0">else </span><span class="s1">()</span>
+        <span class="s1">rating_data = rating_data </span><span class="s0">if </span><span class="s1">rating_data </span><span class="s0">else </span><span class="s1">()</span>
+
+        <span class="s4"># last 4 of card</span>
+        <span class="s1">last_4_digits = credit_card_data[</span><span class="s3">0</span><span class="s1">][-</span><span class="s3">4</span><span class="s1">:] </span><span class="s0">if </span><span class="s1">credit_card_data </span><span class="s0">else </span><span class="s2">''</span>
+
+        <span class="s1">user_data = user_data[:-</span><span class="s3">1</span><span class="s1">] + address_data[</span><span class="s3">1</span><span class="s1">:] + city_state_data + (last_4_digits</span><span class="s0">,</span><span class="s1">) + rating_data</span>
+        <span class="s1">labels = [</span><span class="s2">'Email'</span><span class="s0">, </span><span class="s2">'First Name'</span><span class="s0">, </span><span class="s2">'Last Name'</span><span class="s0">, </span><span class="s2">'Gender'</span><span class="s0">, </span><span class="s2">'Age'</span><span class="s0">, </span><span class="s2">'Major'</span><span class="s0">, </span><span class="s2">'Street Number'</span><span class="s0">, </span><span class="s2">'Street Name'</span><span class="s0">,</span>
+                  <span class="s2">'Zipcode'</span><span class="s0">, </span><span class="s2">'City'</span><span class="s0">, </span><span class="s2">'State'</span><span class="s0">, </span><span class="s2">'Credit Card (Last 4)'</span><span class="s0">, </span><span class="s2">'Rating'</span><span class="s0">, </span><span class="s2">'Rating Description'</span><span class="s1">]</span>
+    <span class="s4">#seller info, same thing as above</span>
+    <span class="s0">elif </span><span class="s1">login_type == </span><span class="s2">'seller'</span><span class="s1">:</span>
+        <span class="s1">c.execute(</span><span class="s2">&quot;SELECT email, bank_routing_number, bank_account_number, balance FROM Sellers WHERE email=?&quot;</span><span class="s0">,</span>
+                  <span class="s1">(email</span><span class="s0">,</span><span class="s1">))</span>
+        <span class="s1">user_data = c.fetchone()</span>
+        <span class="s1">seller_email = user_data[</span><span class="s3">0</span><span class="s1">]</span>
+        <span class="s1">c.execute(</span><span class="s2">&quot;SELECT rating, rating_desc FROM Rating WHERE seller_email=?&quot;</span><span class="s0">, </span><span class="s1">(seller_email</span><span class="s0">,</span><span class="s1">))</span>
+        <span class="s1">rating_data = c.fetchone()</span>
+        <span class="s0">if </span><span class="s1">rating_data </span><span class="s0">is None</span><span class="s1">:</span>
+            <span class="s1">rating_data = ()</span>
+        <span class="s1">c.execute(</span><span class="s2">&quot;SELECT business_name, email, customer_service_phone_number FROM Local_Vendors WHERE email=?&quot;</span><span class="s0">,</span>
+                  <span class="s1">(seller_email</span><span class="s0">,</span><span class="s1">))</span>
+        <span class="s1">vendor_data = c.fetchone()</span>
+        <span class="s0">if </span><span class="s1">vendor_data:</span>
+            <span class="s1">user_data = user_data + vendor_data + rating_data</span>
+            <span class="s1">labels = [</span><span class="s2">'Email'</span><span class="s0">, </span><span class="s2">'Bank Routing Number'</span><span class="s0">, </span><span class="s2">'Bank Account Number'</span><span class="s0">, </span><span class="s2">'Balance'</span><span class="s0">, </span><span class="s2">'Business Name'</span><span class="s0">, </span><span class="s2">'Email'</span><span class="s0">,</span>
+                      <span class="s2">'Customer Service Phone Number'</span><span class="s0">, </span><span class="s2">'Rating'</span><span class="s0">, </span><span class="s2">'Rating Description'</span><span class="s1">]</span>
+        <span class="s0">else</span><span class="s1">:</span>
+            <span class="s1">user_data = user_data + rating_data</span>
+            <span class="s1">labels = [</span><span class="s2">'Email'</span><span class="s0">, </span><span class="s2">'Bank Routing Number'</span><span class="s0">, </span><span class="s2">'Bank Account Number'</span><span class="s0">, </span><span class="s2">'Balance'</span><span class="s0">, </span><span class="s2">'Rating'</span><span class="s0">, </span><span class="s2">'Rating Description'</span><span class="s1">]</span>
+    <span class="s0">elif </span><span class="s1">login_type == </span><span class="s2">'helpdesk'</span><span class="s1">: </span><span class="s4">#helpdesk info, same as above</span>
+        <span class="s1">c.execute(</span><span class="s2">&quot;SELECT email, position FROM Helpdesk WHERE email=?&quot;</span><span class="s0">, </span><span class="s1">(email</span><span class="s0">,</span><span class="s1">))</span>
+        <span class="s1">user_data = c.fetchone()</span>
+        <span class="s1">labels = [</span><span class="s2">'Email'</span><span class="s0">, </span><span class="s2">'Position'</span><span class="s1">]</span>
+    <span class="s0">else</span><span class="s1">:</span>
+        <span class="s1">conn.close()</span>
+        <span class="s0">return </span><span class="s2">&quot;Invalid login type&quot;</span>
+
+    <span class="s1">conn.close()</span>
+    <span class="s0">return </span><span class="s1">render_template(</span><span class="s2">'profile.html'</span><span class="s0">, </span><span class="s1">user_data=user_data</span><span class="s0">, </span><span class="s1">labels=labels)</span>
+
+<span class="s4">#get teh database</span>
+<span class="s0">def </span><span class="s1">get_db():</span>
+    <span class="s1">db = getattr(g</span><span class="s0">, </span><span class="s2">'_database'</span><span class="s0">, None</span><span class="s1">)</span>
+    <span class="s0">if </span><span class="s1">db </span><span class="s0">is None</span><span class="s1">:</span>
+        <span class="s1">db = g._database = sqlite3.connect(DATABASE)</span>
+    <span class="s0">return </span><span class="s1">db</span>
+
+<span class="s4">#close database conn</span>
+<span class="s1">@app.teardown_appcontext</span>
+<span class="s0">def </span><span class="s1">close_connection(exception):</span>
+    <span class="s1">db = getattr(g</span><span class="s0">, </span><span class="s2">'_database'</span><span class="s0">, None</span><span class="s1">)</span>
+    <span class="s0">if </span><span class="s1">db </span><span class="s0">is not None</span><span class="s1">:</span>
+        <span class="s1">db.close()</span>
+
+<span class="s4">#query db</span>
+<span class="s0">def </span><span class="s1">query_db(query</span><span class="s0">, </span><span class="s1">args=()</span><span class="s0">, </span><span class="s1">one=</span><span class="s0">False</span><span class="s1">):</span>
+    <span class="s1">cur = get_db().execute(query</span><span class="s0">, </span><span class="s1">args)</span>
+    <span class="s1">rv = cur.fetchall()</span>
+    <span class="s1">cur.close()</span>
+    <span class="s0">return </span><span class="s1">(rv[</span><span class="s3">0</span><span class="s1">] </span><span class="s0">if </span><span class="s1">rv </span><span class="s0">else None</span><span class="s1">) </span><span class="s0">if </span><span class="s1">one </span><span class="s0">else </span><span class="s1">rv</span>
+
+<span class="s4"># buyer route</span>
+<span class="s1">@app.route(</span><span class="s2">&quot;/buyer&quot;</span><span class="s1">)</span>
+<span class="s0">def </span><span class="s1">buyer():</span>
+    <span class="s1">parent_categories = query_db(</span><span class="s2">&quot;SELECT DISTINCT parent_category FROM Categories&quot;</span><span class="s1">) </span><span class="s4"># categories dropdown</span>
+    <span class="s1">categories = {} </span><span class="s4">#make dic</span>
+    <span class="s0">for </span><span class="s1">parent </span><span class="s0">in </span><span class="s1">parent_categories:</span>
+        <span class="s1">categories[parent[</span><span class="s3">0</span><span class="s1">]] = query_db(</span><span class="s2">&quot;SELECT category_name FROM Categories WHERE parent_category=?&quot;</span><span class="s0">, </span><span class="s1">[parent[</span><span class="s3">0</span><span class="s1">]]) </span><span class="s4">#put subcat under cat</span>
+    <span class="s0">return </span><span class="s1">render_template(</span><span class="s2">&quot;buyer.html&quot;</span><span class="s0">, </span><span class="s1">categories=categories)</span>
+
+<span class="s4">#auctions route</span>
+<span class="s1">@app.route(</span><span class="s2">'/auctions'</span><span class="s0">, </span><span class="s1">methods=[</span><span class="s2">'GET'</span><span class="s1">])</span>
+<span class="s0">def </span><span class="s1">auctions():</span>
+    <span class="s1">search_query = request.args.get(</span><span class="s2">'search'</span><span class="s1">) </span><span class="s4">#search bar</span>
+    <span class="s1">category = request.args.get(</span><span class="s2">'category'</span><span class="s1">)</span>
+
+
+    <span class="s1">conn = sqlite3.connect(</span><span class="s2">'database.db'</span><span class="s1">)</span>
+    <span class="s1">cursor = conn.cursor()</span>
+
+    <span class="s4"># search the database to get keywords listings that match the search query or category</span>
+    <span class="s0">if </span><span class="s1">search_query:</span>
+        <span class="s1">cursor.execute(</span><span class="s2">&quot;&quot;&quot; 
+            SELECT * FROM auction_listings WHERE auction_title LIKE ? OR category LIKE ? 
+        &quot;&quot;&quot;</span><span class="s0">, </span><span class="s1">(</span><span class="s2">'%' </span><span class="s1">+ search_query + </span><span class="s2">'%'</span><span class="s0">, </span><span class="s2">'%' </span><span class="s1">+ search_query + </span><span class="s2">'%'</span><span class="s1">))</span>
+    <span class="s0">elif </span><span class="s1">category:</span>
+        <span class="s1">cursor.execute(</span><span class="s2">&quot;&quot;&quot; 
+            SELECT * FROM auction_listings WHERE category = ? 
+        &quot;&quot;&quot;</span><span class="s0">, </span><span class="s1">(category</span><span class="s0">,</span><span class="s1">))</span>
+    <span class="s0">else</span><span class="s1">:</span>
+        <span class="s1">cursor.execute(</span><span class="s2">&quot;&quot;&quot; 
+            SELECT * FROM auction_listings 
+        &quot;&quot;&quot;</span><span class="s1">)</span>
+
+    <span class="s4"># get rows as tuples</span>
+    <span class="s1">rows = cursor.fetchall()</span>
+
+    <span class="s1">cursor.close()</span>
+    <span class="s1">conn.close()</span>
+
+    <span class="s4"># make  rows into a list of dictionaries</span>
+    <span class="s1">listings = []</span>
+    <span class="s0">for </span><span class="s1">row </span><span class="s0">in </span><span class="s1">rows:</span>
+        <span class="s1">listing = {</span>
+            <span class="s2">'seller_email'</span><span class="s1">: row[</span><span class="s3">0</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'listing_id'</span><span class="s1">: row[</span><span class="s3">1</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'category'</span><span class="s1">: row[</span><span class="s3">2</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'auction_title'</span><span class="s1">: row[</span><span class="s3">3</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'product_name'</span><span class="s1">: row[</span><span class="s3">4</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'product_description'</span><span class="s1">: row[</span><span class="s3">5</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'quantity'</span><span class="s1">: row[</span><span class="s3">6</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'reserve_price'</span><span class="s1">: row[</span><span class="s3">7</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'max_bids'</span><span class="s1">: row[</span><span class="s3">8</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'status'</span><span class="s1">: row[</span><span class="s3">9</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'current_bid'</span><span class="s1">: row[</span><span class="s3">10</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'bid_count'</span><span class="s1">: row[</span><span class="s3">11</span><span class="s1">]  </span><span class="s4"># Add the bid_count key</span>
+        <span class="s1">}</span>
+
+        <span class="s1">listings.append(listing)</span>
+
+    <span class="s4"># put  search query and cat vars in the template</span>
+    <span class="s0">return </span><span class="s1">render_template(</span><span class="s2">'auctions.html'</span><span class="s0">, </span><span class="s1">listings=listings</span><span class="s0">, </span><span class="s1">search_query=search_query</span><span class="s0">, </span><span class="s1">category=category)</span>
+
+<span class="s4">#place bid route</span>
+<span class="s1">@app.route(</span><span class="s2">'/place_bid/&lt;listing_id&gt;'</span><span class="s0">, </span><span class="s1">methods=[</span><span class="s2">'POST'</span><span class="s1">])</span>
+<span class="s0">def </span><span class="s1">place_bid(listing_id):</span>
+    <span class="s4"># get bid amount from the form</span>
+    <span class="s1">bid_amount = int(request.form[</span><span class="s2">'bid_amount'</span><span class="s1">])</span>
+    <span class="s4">#get email from the cookies</span>
+    <span class="s1">email = request.cookies.get(</span><span class="s2">'email'</span><span class="s1">)</span>
+    <span class="s1">conn = sqlite3.connect(</span><span class="s2">'database.db'</span><span class="s1">)</span>
+    <span class="s1">cursor = conn.cursor()</span>
+
+    <span class="s4"># ensure bid is 1 more than last bid</span>
+    <span class="s1">cursor.execute(</span><span class="s2">&quot;&quot;&quot; 
+        SELECT current_bid, reserve_price, bid_count, max_bids, last_bidder_email FROM auction_listings WHERE listing_id = ? 
+    &quot;&quot;&quot;</span><span class="s0">, </span><span class="s1">(listing_id</span><span class="s0">,</span><span class="s1">))</span>
+    <span class="s1">row = cursor.fetchone()</span>
+    <span class="s1">current_bid = row[</span><span class="s3">0</span><span class="s1">] </span><span class="s0">if </span><span class="s1">row </span><span class="s0">else None</span>
+    <span class="s1">reserve_price = row[</span><span class="s3">1</span><span class="s1">] </span><span class="s0">if </span><span class="s1">row </span><span class="s0">else None</span>
+    <span class="s1">bid_count = row[</span><span class="s3">2</span><span class="s1">] </span><span class="s0">if </span><span class="s1">row </span><span class="s0">else None</span>
+    <span class="s1">max_bids = row[</span><span class="s3">3</span><span class="s1">] </span><span class="s0">if </span><span class="s1">row </span><span class="s0">else None</span>
+    <span class="s1">last_bidder_email = row[</span><span class="s3">4</span><span class="s1">] </span><span class="s0">if </span><span class="s1">row </span><span class="s0">else None</span>
+<span class="s4">#if the last bidder email isnt the same as logged in email, then they can bid again</span>
+    <span class="s0">if </span><span class="s1">last_bidder_email != email:</span>
+        <span class="s0">if </span><span class="s1">bid_amount &gt;= reserve_price </span><span class="s0">and </span><span class="s1">(current_bid </span><span class="s0">is None or </span><span class="s1">bid_amount &gt; current_bid) </span><span class="s0">and </span><span class="s1">(bid_count &lt; max_bids):</span>
+            <span class="s4"># update listing with  new bid amount increment the bid count by1, set the last_bidder_email</span>
+            <span class="s1">cursor.execute(</span><span class="s2">&quot;&quot;&quot; 
+                UPDATE auction_listings SET current_bid = ?, bid_count = bid_count + 1, last_bidder_email = ? WHERE listing_id = ? 
+            &quot;&quot;&quot;</span><span class="s0">, </span><span class="s1">(bid_amount</span><span class="s0">, </span><span class="s1">email</span><span class="s0">, </span><span class="s1">listing_id))</span>
+
+            <span class="s4">#see if bid amount is equal to the max bids</span>
+            <span class="s0">if </span><span class="s1">bid_amount &gt;= reserve_price </span><span class="s0">and </span><span class="s1">(current_bid </span><span class="s0">is None or </span><span class="s1">bid_amount &gt; current_bid) </span><span class="s0">and </span><span class="s1">(</span>
+                    <span class="s1">bid_count == max_bids - </span><span class="s3">1</span><span class="s1">):</span>
+                <span class="s4"># find highest transactions_id from the trans table and increment it by 1</span>
+                <span class="s1">cursor.execute(</span><span class="s2">&quot;&quot;&quot; 
+                    SELECT MAX(transaction_ID) FROM transactions 
+                &quot;&quot;&quot;</span><span class="s1">)</span>
+                <span class="s1">highest_transactions_id = cursor.fetchone()[</span><span class="s3">0</span><span class="s1">]</span>
+                <span class="s1">new_transactions_id = highest_transactions_id + </span><span class="s3">1</span>
+
+                <span class="s4">#move it to trans table</span>
+                <span class="s1">cursor.execute(</span><span class="s2">&quot;&quot;&quot; 
+                    INSERT INTO transactions (transaction_ID, Seller_Email, Listing_ID, buyer_email, date, Payment) 
+                    VALUES (?, (SELECT seller_email FROM auction_listings WHERE listing_id = ?), ?, ?, date('now'), ?) 
+                &quot;&quot;&quot;</span><span class="s0">, </span><span class="s1">(new_transactions_id</span><span class="s0">, </span><span class="s1">listing_id</span><span class="s0">, </span><span class="s1">listing_id</span><span class="s0">, </span><span class="s1">email</span><span class="s0">, </span><span class="s1">bid_amount))</span>
+
+                <span class="s4"># remove it from auctions table</span>
+                <span class="s1">cursor.execute(</span><span class="s2">&quot;&quot;&quot; 
+                    DELETE FROM auction_listings WHERE listing_id = ? 
+                &quot;&quot;&quot;</span><span class="s0">, </span><span class="s1">(listing_id</span><span class="s0">,</span><span class="s1">))</span>
+
+
+            <span class="s1">conn.commit()</span>
+
+        <span class="s0">else</span><span class="s1">:</span>
+            <span class="s4">#dollar more than last bid error message</span>
+            <span class="s1">flash(</span><span class="s2">'Bid amount must be $1 higher than the current bid.'</span><span class="s0">, </span><span class="s2">'error'</span><span class="s1">)</span>
+    <span class="s0">else</span><span class="s1">:</span>
+        <span class="s4">#conesecutive bides error message</span>
+        <span class="s1">flash(</span><span class="s2">'You cannot place two consecutive bids.'</span><span class="s0">, </span><span class="s2">'error'</span><span class="s1">)</span>
+
+    <span class="s1">cursor.close()</span>
+    <span class="s1">conn.close()</span>
+    <span class="s0">return </span><span class="s1">redirect(request.referrer </span><span class="s0">or </span><span class="s1">url_for(</span><span class="s2">'auctions'</span><span class="s1">))</span>
+
+<span class="s4">#listings by title route</span>
+<span class="s0">def </span><span class="s1">get_listings_by_title(search_query):</span>
+    <span class="s1">conn = sqlite3.connect(</span><span class="s2">'database.db'</span><span class="s1">)</span>
+    <span class="s1">cursor = conn.cursor()</span>
+    <span class="s4"># query for listings with matching auction titles</span>
+    <span class="s1">cursor.execute(</span><span class="s2">&quot;&quot;&quot; 
+        SELECT * FROM auction_listings WHERE auction_title LIKE ? 
+    &quot;&quot;&quot;</span><span class="s0">, </span><span class="s1">(</span><span class="s2">'%' </span><span class="s1">+ search_query + </span><span class="s2">'%'</span><span class="s0">,</span><span class="s1">))</span>
+    <span class="s4">#all rows as tuple list</span>
+    <span class="s1">rows = cursor.fetchall()</span>
+    <span class="s1">cursor.close()</span>
+    <span class="s1">conn.close()</span>
+    <span class="s4">#make rows into list of dictionaries</span>
+    <span class="s1">listings = []</span>
+    <span class="s0">for </span><span class="s1">row </span><span class="s0">in </span><span class="s1">rows:</span>
+        <span class="s1">listing = {</span>
+            <span class="s2">'seller_email'</span><span class="s1">: row[</span><span class="s3">0</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'listing_id'</span><span class="s1">: row[</span><span class="s3">1</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'category'</span><span class="s1">: row[</span><span class="s3">2</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'auction_title'</span><span class="s1">: row[</span><span class="s3">3</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'product_name'</span><span class="s1">: row[</span><span class="s3">4</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'product_description'</span><span class="s1">: row[</span><span class="s3">5</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'quantity'</span><span class="s1">: row[</span><span class="s3">6</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'reserve_price'</span><span class="s1">: row[</span><span class="s3">7</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'max_bids'</span><span class="s1">: row[</span><span class="s3">8</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'status'</span><span class="s1">: row[</span><span class="s3">9</span><span class="s1">]</span><span class="s0">,</span>
+        <span class="s1">}</span>
+
+        <span class="s1">listings.append(listing)</span>
+    <span class="s0">return </span><span class="s1">listings</span>
+
+<span class="s4">#category listings route</span>
+<span class="s0">def </span><span class="s1">get_listings_by_category(category):</span>
+    <span class="s1">conn = sqlite3.connect(</span><span class="s2">'database.db'</span><span class="s1">)</span>
+    <span class="s1">cursor = conn.cursor()</span>
+    <span class="s4"># query to get listings for specified category</span>
+    <span class="s1">cursor.execute(</span><span class="s2">&quot;&quot;&quot; 
+        SELECT * FROM auction_listings WHERE category = ? 
+    &quot;&quot;&quot;</span><span class="s0">, </span><span class="s1">(category</span><span class="s0">,</span><span class="s1">))</span>
+    <span class="s1">rows = cursor.fetchall()</span>
+    <span class="s1">cursor.close()</span>
+    <span class="s1">conn.close()</span>
+    <span class="s1">listings = []</span>
+    <span class="s0">for </span><span class="s1">row </span><span class="s0">in </span><span class="s1">rows:</span>
+        <span class="s1">listing = {</span>
+            <span class="s2">'seller_email'</span><span class="s1">: row[</span><span class="s3">0</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'listing_id'</span><span class="s1">: row[</span><span class="s3">1</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'category'</span><span class="s1">: row[</span><span class="s3">2</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'auction_title'</span><span class="s1">: row[</span><span class="s3">3</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'product_name'</span><span class="s1">: row[</span><span class="s3">4</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'product_description'</span><span class="s1">: row[</span><span class="s3">5</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'quantity'</span><span class="s1">: row[</span><span class="s3">6</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'reserve_price'</span><span class="s1">: row[</span><span class="s3">7</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'max_bids'</span><span class="s1">: row[</span><span class="s3">8</span><span class="s1">]</span><span class="s0">,</span>
+            <span class="s2">'status'</span><span class="s1">: row[</span><span class="s3">9</span><span class="s1">]</span><span class="s0">,</span>
+        <span class="s1">}</span>
+
+        <span class="s1">listings.append(listing)</span>
+    <span class="s0">return </span><span class="s1">listings</span>
+
+
+<span class="s0">from </span><span class="s1">flask </span><span class="s0">import </span><span class="s1">request</span><span class="s0">, </span><span class="s1">session</span>
+
+<span class="s4"># sell form route</span>
+<span class="s1">@app.route(</span><span class="s2">'/sellform'</span><span class="s0">, </span><span class="s1">methods=[</span><span class="s2">'GET'</span><span class="s1">])</span>
+<span class="s0">def </span><span class="s1">sellform():</span>
+    <span class="s1">conn = sqlite3.connect(</span><span class="s2">'database.db'</span><span class="s1">)</span>
+    <span class="s1">cursor = conn.cursor()</span>
+<span class="s4">#get parent category from categories for dropdown</span>
+    <span class="s1">cursor.execute(</span><span class="s2">&quot;SELECT DISTINCT parent_category FROM Categories&quot;</span><span class="s1">)</span>
+    <span class="s1">parent_categories = cursor.fetchall()</span>
+
+    <span class="s1">cursor.execute(</span><span class="s2">&quot;SELECT category_name FROM Categories&quot;</span><span class="s1">)</span>
+    <span class="s1">subcategories = cursor.fetchall()</span>
+
+    <span class="s1">cursor.close()</span>
+    <span class="s1">conn.close()</span>
+
+    <span class="s1">categories = {}</span>
+    <span class="s0">for </span><span class="s1">parent </span><span class="s0">in </span><span class="s1">parent_categories:</span>
+        <span class="s1">categories[parent[</span><span class="s3">0</span><span class="s1">]] = query_db(</span><span class="s2">&quot;SELECT category_name FROM Categories WHERE parent_category=?&quot;</span><span class="s0">, </span><span class="s1">[parent[</span><span class="s3">0</span><span class="s1">]])</span>
+
+    <span class="s0">return </span><span class="s1">render_template(</span><span class="s2">'sellform.html'</span><span class="s0">, </span><span class="s1">categories=categories</span><span class="s0">, </span><span class="s1">subcategories=subcategories)</span>
+
+<span class="s4"># creating auctions</span>
+<span class="s1">@app.route(</span><span class="s2">'/sellform'</span><span class="s0">, </span><span class="s1">methods=[</span><span class="s2">'POST'</span><span class="s1">])</span>
+<span class="s0">def </span><span class="s1">create_auction():</span>
+    <span class="s1">conn = sqlite3.connect(</span><span class="s2">'database.db'</span><span class="s1">)</span>
+    <span class="s1">cursor = conn.cursor()</span>
+    <span class="s4">#get email of logged in</span>
+    <span class="s1">seller_email = request.cookies.get(</span><span class="s2">'email'</span><span class="s1">)</span>
+<span class="s4">#request form</span>
+    <span class="s1">category = request.form[</span><span class="s2">'Category'</span><span class="s1">]</span>
+    <span class="s1">auction_title = request.form[</span><span class="s2">'Auction_Title'</span><span class="s1">]</span>
+    <span class="s1">product_name = request.form[</span><span class="s2">'Product_Name'</span><span class="s1">]</span>
+    <span class="s1">product_description = request.form[</span><span class="s2">'Product_Description'</span><span class="s1">]</span>
+    <span class="s1">quantity = request.form[</span><span class="s2">'Quantity'</span><span class="s1">]</span>
+    <span class="s1">reserve_price = request.form[</span><span class="s2">'Reserve_Price'</span><span class="s1">]</span>
+    <span class="s1">max_bids = request.form[</span><span class="s2">'Max_Bids'</span><span class="s1">]</span>
+    <span class="s1">status = </span><span class="s3">1</span>
+<span class="s4">#give listing id of one more than max</span>
+    <span class="s1">cursor.execute(</span><span class="s2">&quot;SELECT MAX(listing_id) FROM Auction_Listings&quot;</span><span class="s1">)</span>
+    <span class="s1">max_listing_id = cursor.fetchone()[</span><span class="s3">0</span><span class="s1">]</span>
+    <span class="s0">if </span><span class="s1">max_listing_id </span><span class="s0">is None</span><span class="s1">:</span>
+        <span class="s1">max_listing_id = </span><span class="s3">0</span>
+    <span class="s1">listing_id = max_listing_id + </span><span class="s3">1</span>
+
+    <span class="s1">cursor.execute(</span>
+        <span class="s2">&quot;INSERT INTO Auction_Listings (listing_id, seller_email, category, auction_title, product_name, product_description, quantity, reserve_price, max_bids, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)&quot;</span><span class="s0">,</span>
+        <span class="s1">(listing_id</span><span class="s0">, </span><span class="s1">seller_email</span><span class="s0">, </span><span class="s1">category</span><span class="s0">, </span><span class="s1">auction_title</span><span class="s0">, </span><span class="s1">product_name</span><span class="s0">, </span><span class="s1">product_description</span><span class="s0">, </span><span class="s1">quantity</span><span class="s0">, </span><span class="s1">reserve_price</span><span class="s0">,</span>
+         <span class="s1">max_bids</span><span class="s0">, </span><span class="s1">status))</span>
+
+    <span class="s1">conn.commit()</span>
+    <span class="s1">cursor.close()</span>
+    <span class="s1">conn.close()</span>
+
+    <span class="s0">return </span><span class="s1">redirect(url_for(</span><span class="s2">'sellform'</span><span class="s1">))</span>
+</pre>
+</body>
+</html>

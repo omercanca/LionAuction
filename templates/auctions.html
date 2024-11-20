@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<style>
+    body {
+        background-color: #313235;
+        font-family: Arial, sans-serif;
+    }
+    .flashed-messages {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px 0;
+    list-style-type: none;
+    text-align: center;
+}
+form {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+form button {
+    background-color: #4169E1;
+    border: none;
+    color: #ffffff;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+div.back-button button {
+    margin-right: 40px;
+    margin-top: 10px;
+  background-color: #4169E1;
+  border: none;
+  color: #ffffff;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease-in-out;
+}
+
+div.back-button button:hover {
+  background-color: #314e77;
+}
+
+form button:hover {
+    background-color: #314e77;
+}
+
+.flashed-messages li.error {
+    color: #FF0000;
+}
+
+
+    .auction-listings {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        color: #ffffff;
+    }
+
+    .auction-listings h2 {
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    th {
+        background-color: #4169E1;
+        color: #ffffff;
+        font-weight: bold;
+        padding: 10px;
+        text-align: left;
+    }
+
+    td {
+        padding: 10px;
+        border-bottom: 1px solid #aaaaaa;
+        color: #cccccc;
+    }
+
+    tr:nth-child(even) {
+        background-color: #505050;
+    }
+
+    tr:hover {
+        background-color: #4169E1;
+        cursor: pointer;
+    }
+
+    a {
+        color: #cccccc;
+        text-decoration: none;
+    }
+
+    a:hover {
+        color: #ffffff;
+    }
+
+</style>
+</head>
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <ul class="flashed-messages">
+        {% for category, message in messages %}
+        <li{% if category %} class="{{ category }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+
+    <div class="auction-listings">
+        <h2>Auctions in {{ category }}</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Listing ID</th>
+                    <th>Auction Title</th>
+                    <th>Product Name</th>
+                    <th>Product Description</th>
+                    <th>Quantity </th>
+                    <th>Reserve Price</th>
+                    <th>Bid Count</th>
+                    <th>Max Bids</th>
+                    <th>Current Bid</th>
+                    <th>Bid</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for listing in listings %}
+                    <tr>
+                        <td>{{ listing.category }}</td>
+                        <td>{{ listing.listing_id }}</td>
+                        <td><a href="/auction/{{ listing.id }}">{{ listing.auction_title }}</a></td>
+                        <td>{{ listing.product_name }}</td>
+                        <td>{{ listing.product_description }}</td>
+                        <td>{{ listing.quantity }}</td>
+                        <td>{{ listing.reserve_price }}</td>
+                        <td>{{ listing.bid_count }}</td>
+                        <td>{{ listing.max_bids }}</td>
+                        <td>{{ listing.current_bid }}</td>
+                        <td>
+            {% if listing.bid_count is not none and listing.bid_count < listing.max_bids %}
+                                <form action="/place_bid/{{ listing.listing_id }}" method="post">
+                                    <input type="number" name="bid_amount" min="{{ listing.reserve_price }}" step="0.01" required>
+                                    <button type="submit">Place Bid</button>
+                                </form>
+
+                            {% else %}
+                                Bidding closed
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+<div class="back-button" style="position: absolute; top: 10px; right: 10px;">
+  <a href="{{ url_for('buyer') }}"><button><i class="fas fa-chevron-left"></i> Go Back</button></a>
+</div>
+
+
+</body>
+</html>

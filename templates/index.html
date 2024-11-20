@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <title></title>
+</head>
+<body>
+
+<head>
+	<title>LionAuction</title>
+	<style>
+		body {
+			background-color: #313235;
+			font-family: Arial, sans-serif;
+		}
+
+		h1 {
+			text-align: center;
+			margin-top: 50px;
+		}
+
+
+		.login-box {
+			background-color: #4169E1;
+			border-radius: 10px;
+			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+			display: inline-block;
+			margin-top: 50px;
+			padding: 20px;
+			text-align: left;
+            float: right;
+            margin-right: 90px;
+            max-width: 350px; /* Add this line to set a maximum width */
+
+		}
+
+		.login-box label {
+			display: block;
+			font-weight: bold;
+			margin-bottom: 10px;
+		}
+
+        .login-box input[type="email"], .login-box input[type="password"] {
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            margin-bottom: 20px;
+            padding: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+		.login-box button[type="submit"] {
+			background-color: #4285F4;
+			border: none;
+			border-radius: 5px;
+			color: #fff;
+			cursor: pointer;
+			font-size: 16px;
+			padding: 10px;
+			width: 100%;
+            margin-top: 10px;
+
+		}
+		.login-box button[type="signup"] {
+			background-color: #4285F4;
+			border: none;
+			border-radius: 5px;
+			color: #fff;
+			cursor: pointer;
+			font-size: 16px;
+			padding: 10px;
+			width: 100%;
+                margin-top: 10px;
+
+		}
+		.lion-image {
+			display: block;
+			margin: -17px auto;
+			max-width: 500px;
+            float: left;
+
+		}
+
+        h1 {
+          text-align: center;
+          margin-top: 50px;
+          position: relative;
+          color: #fff;
+          animation: moveTitle 2s ease-in-out infinite alternate;
+        }
+
+@keyframes moveTitle {
+  from {
+    transform: translateX(-25px);
+  }
+  to {
+    transform: translateX(25px);
+  }
+}
+
+	</style>
+</head>
+<body>
+  <h1 style="color: ghostwhite; font-size: 80px;">Lion<span style="color: #4169E1; font-size: 80px;">Auction</span></h1>
+<div class="container">
+  <img class="lion-image" src="https://mir-s3-cdn-cf.behance.net/project_modules/disp/2eb502125135231.6112ca40897cc.png" alt="Penn State Lion"/>
+  <div class="login-box">
+    <h2>Login</h2>
+    <form method="post" action="/">
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" required><br><br>
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" required><br><br>
+      <button type="submit" name="login_type" value="buyer" class="btn btn-primary">Login as Buyer</button>
+      <button type="submit" name="login_type" value="seller" class="btn btn-primary">Login as Seller</button>
+      <button type="submit" name="login_type" value="helpdesk" class="btn btn-primary">Login as Helpdesk</button>
+    </form>
+  </div>
+</div>
+
+</body>
+
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+</body>
+</html>

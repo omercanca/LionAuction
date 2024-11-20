@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Edit Auction Listing</title>
+    <style>
+      body {
+        background-color: #313235;
+        color: #fff;
+      }
+      label {
+        display: inline-block;
+        width: 150px;
+        margin-top: 10px;
+      }
+      input, select {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Edit Auction Listing</h1>
+    <form action="{{ url_for('update_listing', listing_id=listing['listing_id']) }}" method="post">
+      <label>Category:</label>
+      <select name="category" required>
+        {% for category in categories %}
+          <option value="{{ category['parent_category'] }}" {% if category['parent_category'] == listing['category'] %}selected{% endif %}>{{ category['parent_category'] }}</option>
+        {% endfor %}
+      </select>
+      <br>
+      <label>Title:</label>
+      <input type="text" name="auction_title" value="{{ listing['auction_title'] }}" required>
+      <br>
+      <label>Product Name:</label>
+      <input type="text" name="product_name" value="{{ listing['product_name'] }}" required>
+      <br>
+      <label>Description:</label>
+      <textarea name="product_description" required>{{ listing['product_description'] }}</textarea>
+      <br>
+      <label>Quantity:</label>
+      <input type="number" name="quantity" value="{{ listing['quantity'] }}" required>
+      <br>
+      <label>Reserve Price:</label>
+      <input type="number" step="0.01" name="reserve_price" value="{{ listing['reserve_price'] }}" required>
+      <br>
+      <label>Max Bids:</label>
+      <input type="number" name="max_bids" value="{{ listing['max_bids'] }}" required>
+      <br>
+      <input type="submit" value="Update">
+    </form>
+    <button onclick="goBack()">Go Back</button>
+    <script>
+      function goBack() {
+        window.history.back();
+      }
+    </script>
+  </body>
+</html>

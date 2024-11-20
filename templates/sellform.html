@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Auction</title>
+    <style>
+        body {
+            background-color: #313235;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            text-align: center;
+            margin-top: 40px;
+        }
+        form {
+            width: 80%;
+            margin: auto;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        label, input, textarea, select {
+            margin-top: 20px;
+            width: 100%;
+        }
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0px;
+            position: relative;
+        }
+        #back-btn {
+            background-color: #f1c40f;
+            color: #313235;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            width: auto;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        input[type="submit"], button {
+            background-color: #f1c40f;
+            color: #313235;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            width: auto;
+        }
+        input[type="submit"]:hover, button:hover {
+            background-color: #d4a200;
+        }
+        #message {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Create Auction</h1>
+    <form id="auction-form" method="POST" onsubmit="submitForm(event)">
+        <label for="category">Category:</label>
+        <select name="Category" id="category">
+            {% for parent_category in categories.keys() %}
+                <optgroup label="{{ parent_category }}">
+                    {% for category in categories[parent_category] %}
+                        <option value="{{ category[0] }}">{{ category[0] }}</option>
+                    {% endfor %}
+                </optgroup>
+            {% endfor %}
+        </select>
+
+        <label for="Auction_Title">Auction Title:</label>
+        <input type="text" name="Auction_Title" id="Auction_Title">
+
+        <label for="Product_Name">Product Name:</label>
+        <input type="text" name="Product_Name" id="Product_Name">
+
+        <label for="Product_Description">Product Description:</label>
+        <textarea name="Product_Description" id="Product_Description"></textarea>
+
+        <label for="Quantity">Quantity:</label>
+        <input type="number" name="Quantity" id="Quantity">
+
+        <label for="Reserve_Price">Reserve Price:</label>
+        <input type="number" name="Reserve_Price" id="Reserve_Price">
+
+        <label for="Max_Bids">Max Bids:</label>
+        <input type="number" name="Max_Bids" id="Max_Bids">
+<div class="button-container">
+            <input type="submit" value="Post Auction">
+        </div>
+    </form>
+    <p id="message"></p>
+    <a href="{{ url_for('seller') }}"><button id="back-btn">Go Back</button></a>
+
+    <script>
+        function submitForm(event) {
+            event.preventDefault();
+
+            const form = document.getElementById('auction-form');
+            const messageElement = document.getElementById('message');
+
+            // Check if the form is complete
+            let formComplete = true;
+            for (let i = 0; i < form.elements.length; i++) {
+                if (form.elements[i].value === '') {
+                    formComplete = false;
+                    break;
+                }
+            }
+
+            if (formComplete) {
+                // Submit the form and show success message
+                form.submit();
+                messageElement.textContent = 'Auction posted successfully!';
+                messageElement.style.color = 'lime';
+            } else {
+                // Show fail message
+                messageElement.textContent = 'Please fill in all fields.';
+                messageElement.style.color = 'red';
+            }
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+

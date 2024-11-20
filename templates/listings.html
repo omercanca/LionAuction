@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Auction Listings</title>
+    <style>
+      body {
+        background-color: #313235;
+        color: #fff;
+      }
+      table {
+        border-collapse: collapse;
+        margin-top: 20px;
+        margin-bottom: 20px;
+      }
+      th {
+        text-align: left;
+        background-color: #444;
+        padding: 10px;
+      }
+      td {
+        border: 1px solid #444;
+        padding: 10px;
+      }
+      a {
+        color: gold;
+        text-decoration: none;
+      }
+      a:hover {
+        color: gold;;
+        text-decoration: none;
+      }
+      a:visited {
+        color: gold;
+        text-decoration: none;
+      }
+      input[type="submit"] {
+        background-color: gold;;
+        color: #313235;
+        padding: 10px 20px;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Auction Listings</h1>
+    <table>
+      <tr>
+        <th>Listing ID</th>
+        <th>Category</th>
+        <th>Title</th>
+        <th>Product Name</th>
+        <th>Description</th>
+        <th>Quantity</th>
+        <th>Reserve Price</th>
+        <th>Max Bids</th>
+        <th>Status</th>
+        <th>Action</th>
+        <th></th>
+      </tr>
+      {% for listing in listings %}
+      <tr>
+        <td>{{ listing['listing_id'] }}</td>
+        <td>{{ listing['category'] }}</td>
+        <td>{{ listing['auction_title'] }}</td>
+        <td>{{ listing['product_name'] }}</td>
+        <td>{{ listing['product_description'] }}</td>
+        <td>{{ listing['quantity'] }}</td>
+        <td>{{ listing['reserve_price'] }}</td>
+        <td>{{ listing['max_bids'] }}</td>
+        <td>{{ listing['status'] }}</td>
+        <td><a href="{{ url_for('edit_listing', listing_id=listing['listing_id']) }}">Edit</a></td>
+<td>
+  <form action="{{ url_for('delete_listing', listing_id=listing['listing_id']) }}" method="POST">
+    <input type="submit" value="Delete" onclick="return confirm('Are you sure you want to delete this listing?')">
+  </form>
+</td>      </tr>
+      {% endfor %}
+    </table>
+    <h2>Completed Transactions</h2>
+    <table>
+      <tr>
+        <th>Transaction ID</th>
+        <th>Seller Email</th>
+        <th>Listing ID</th>
+        <th>Bidder Email</th>
+        <th>Date</th>
+        <th>Payment</th>
+      </tr>
+      {% for transaction in completed_transactions %}
+      <tr>
+        <td>{{ transaction['transaction_id'] }}</td>
+        <td>{{ transaction['seller_email'] }}</td>
+        <td>{{ transaction['listing_id'] }}</td>
+        <td>{{ transaction['bidder_email'] }}</td>
+        <td>{{ transaction['date'] }}</td>
+        <td>{{ transaction['payment'] }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+
+    <div style="text-align:center;">
+      <button onclick="goBack()" style="background-color: #f1c40f; color: #313235; padding: 10px 20px; border-radius: 5px; border: none;margin-top: 40px; cursor: pointer;">Go Back</button>
+    </div>
+    <script>
+      function goBack() {
+        window.history.back();
+      }
+    </script>
+  </body>
+</html>

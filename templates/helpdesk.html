@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LionAuction - Helpdesk</title>
+    <style>
+        body {
+            background-color: #313235;
+            font-family: Arial, sans-serif;
+        }
+
+    #navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        background-color: #333;
+        color: #fff;
+    }
+
+    #navbar-logo {
+        font-size: 32px;
+        font-weight: bold;
+        color: #fff;
+        text-decoration: none;
+        animation: bounce 1.5s infinite;
+    }
+
+    @keyframes bounce {
+        0% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+        100% {
+            transform: translateY(0);
+        }
+    }
+
+    #navbar-buttons {
+        display: flex;
+        align-items: center;
+    }
+
+    .navbar-btn {
+        display: inline-block;
+        margin-left: 10px;
+        background-color: #4285F4;
+        border: none;
+        border-radius: 5px;
+        color: #fff;
+        cursor: pointer;
+        font-size: 16px;
+        padding: 10px;
+        text-align: center;
+        text-decoration: none;
+    }
+
+    #requests-btn {
+        background-color: yellow;
+        margin-left: 10px;
+        padding: 10px;
+        font-size: 16px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .welcome-message {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: #fff;
+        opacity: 1;
+        transition: opacity 1s ease-in-out;
+    }
+
+    .welcome-message.fade {
+        opacity: 0;
+    }
+
+    .welcome-message h1 {
+        font-size: 48px;
+        margin-bottom: 20px;
+    }
+
+    .welcome-message p {
+        font-size: 24px;
+    }
+</style>
+
+</head>
+<body>
+    <div id="navbar">
+        <a href="#" id="navbar-logo">LionAuction</a>
+        <div id="navbar-buttons">
+            <a href="{{ url_for('profile') }}" class="navbar-btn">Profile</a>
+            <a href="{{ url_for('requests') }}"><button id="requests-btn">Requests</button></a>
+            <a href="{{ url_for('logout') }}" class="navbar-btn">Logout</a>
+        </div>
+    </div>
+<div class="welcome-message">
+    <h1>Welcome to LionAuction</h1>
+    <p>Helpdesk Edition</p>
+</div>
+
+<script>
+    const navbarBtns = document.querySelectorAll(".navbar-btn");
+    navbarBtns.forEach(btn => {
+        btn.style.width = "100px";
+    });
+</script>
+</body>
+</html>

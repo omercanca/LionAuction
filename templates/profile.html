@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <style>
+        body {
+            background-color: #313235;
+            font-family: Arial, sans-serif;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            text-align: center;
+            padding: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            margin: 0 auto;
+            width: 50%;
+        }
+        th, td {
+            border: 1px solid #ffffff;
+            padding: 15px;
+            text-align: left;
+        }
+        th {
+            background-color: #43464b;
+        }
+        tr:nth-child(even) {
+            background-color: #3c3f42;
+        }
+        a {
+            display: inline-block;
+            background-color: #f1c40f;
+            color: #313235;
+            text-decoration: none;
+            padding: 10px 20px;
+            margin: 20px;
+            border-radius: 5px;
+        }
+        a:hover {
+            background-color: #f39c12;
+        }
+    </style>
+</head>
+<body>
+    <h1>User Profile</h1>
+    <table>
+        <thead>
+            <tr>
+                {% for label in labels %}
+                    <th>{{ label }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                {% for data in user_data %}
+                    <td>{{ data }}</td>
+                {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+        <script>
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+    <div style="text-align:center;">
+        <button onclick="goBack()" style="background-color: #f1c40f; color: #313235; padding: 10px 20px; border-radius: 5px; border: none;margin-top: 40px; cursor: pointer;">Go Back</button>
+    </div>
+</body>
+</html>

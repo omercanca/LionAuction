@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LionAuction</title>
+</head>
+    <style>
+
+
+body {
+  background-color: #313235;
+  font-family: Arial, sans-serif;
+}
+
+omer {
+  position: absolute;
+    margin-left: 39%;
+    margin-top: 1%;
+  color: #fff;
+}
+#sell-btn {
+  position: absolute;
+    margin-top: 60px;
+    margin-left: 170px;
+  background-color: #4285F4;
+  border: none;
+  border-radius: 5px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 6px;
+  width: 10%;
+  text-align: center;
+}
+#listings-btn {
+  position: absolute;
+    margin-top: 100px;
+    margin-left: 170px;
+  background-color: #4285F4;
+  border: none;
+  border-radius: 5px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 6px;
+  width: 10%;
+  text-align: center;
+}
+#profile-btn {
+  position: absolute;
+    margin-top: 20px;
+    margin-left: 170px;
+  background-color: #4285F4;
+  border: none;
+  border-radius: 5px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 6px;
+  width: 10%;
+  text-align: center;
+}
+#logout-btn {
+  position: absolute;
+    margin-top: 40px;
+    margin-left: 1120px;
+  background-color: #4285F4;
+  border: none;
+  border-radius: 5px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 6px;
+  width: 10%;
+  text-align: center;
+}
+
+</style>
+<body>
+  <omer style="color: ghostwhite; font-size: 60px;">Lion<span style="color: #4169E1; font-size: 60px;">Auction</span></omer>
+ <a href="{{ url_for('profile') }}"><button id="profile-btn">Profile</button></a>
+  <a href="{{ url_for('sellform') }}"><button id="sell-btn">Sell an Item</button></a>
+    <a href="{{ url_for('listings') }}"><button id = "listings-btn">Listings</button></a>
+  <a href="{{ url_for('logout') }}"><button id = "logout-btn">Logout</button></a>
+<div class="welcome-message">
+  <h1>Welcome to LionAuction</h1>
+  <p>Buy and sell with confidence</p>
+</div>
+
+<style>
+.welcome-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #fff;
+  opacity: 1;
+  transition: opacity 1s ease-in-out;
+}
+.welcome-message.fade {
+  opacity: 0;
+}
+.welcome-message h1 {
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+.welcome-message p {
+  font-size: 24px;
+}
+
+</style>
+</body>
+</html>
