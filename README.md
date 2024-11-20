@@ -7,7 +7,6 @@ An exclusive auction platform for Penn State students to buy and sell items! Bui
 - About
 - Features
 - Tech Stack
-- Usage
 
 ## 📜 About
 
